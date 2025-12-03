@@ -319,28 +319,25 @@ export default function ProjectDetailPage() {
                   }}>
                     {error}
                   </div>
-                  {(error.includes('Ollama') || error.includes('ollama') || error.includes('503')) && (
+                  {(error.includes('Ollama') || error.includes('ollama') || error.includes('Groq') || error.includes('groq') || error.includes('503')) && (
                     <div style={{ marginTop: '1rem', padding: '1rem', background: '#FFFFFF', borderRadius: '8px', border: '1px solid #93C5FD' }}>
                       <div style={{ color: '#1E40AF', fontWeight: '600', marginBottom: '0.75rem', fontSize: '0.875rem' }}>
-                        📦 Setup Ollama (Free, No Tokens Required):
+                        🔧 Setup Groq (Free, No Tokens Required):
                       </div>
                       <ol style={{ margin: 0, paddingLeft: '1.5rem', color: '#1E3A8A', fontSize: '0.8125rem', lineHeight: '1.8' }}>
                         <li style={{ marginBottom: '0.5rem' }}>
-                          <strong>Install Ollama:</strong> Visit <a href="https://ollama.com" target="_blank" rel="noopener" style={{ color: '#0EA5E9', textDecoration: 'underline' }}>ollama.com</a> and download for your OS
+                          <strong>Get API Key:</strong> Visit <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style={{ color: '#0EA5E9', textDecoration: 'underline' }}>console.groq.com/keys</a> and create a free API key
                         </li>
                         <li style={{ marginBottom: '0.5rem' }}>
-                          <strong>Pull the model:</strong> Run <code style={{ background: '#F1F5F9', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.75rem' }}>ollama pull qwen2.5:7b-instruct</code>
-                        </li>
-                        <li style={{ marginBottom: '0.5rem' }}>
-                          <strong>Start Ollama:</strong> Run <code style={{ background: '#F1F5F9', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.75rem' }}>ollama serve</code> (or it may run automatically as a service)
+                          <strong>Add to Render:</strong> Go to Render → Environment → Add <code style={{ background: '#F1F5F9', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.75rem' }}>GROQ_API_KEY</code> with your key
                         </li>
                         <li>
-                          <strong>Verify:</strong> Check that Ollama is running at <code style={{ background: '#F1F5F9', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.75rem' }}>http://localhost:11434</code>
+                          <strong>Set Provider:</strong> Make sure <code style={{ background: '#F1F5F9', padding: '0.125rem 0.375rem', borderRadius: '4px', fontSize: '0.75rem' }}>LLM_PROVIDER=groq</code> is set in Render
                         </li>
                       </ol>
                       <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#EFF6FF', borderRadius: '6px', border: '1px solid #BFDBFE' }}>
                         <div style={{ color: '#1E40AF', fontSize: '0.75rem', lineHeight: '1.6' }}>
-                          <strong>💡 Tip:</strong> Once Ollama is set up, you can use AI-powered sprint planning completely free, without any API tokens!
+                          <strong>💡 Tip:</strong> Groq offers free API access with generous limits - perfect for AI-powered sprint planning!
                         </div>
                       </div>
                     </div>
@@ -351,7 +348,7 @@ export default function ProjectDetailPage() {
                         💡 Solutions:
                       </div>
                       <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#78350F', fontSize: '0.8125rem', lineHeight: '1.8' }}>
-                        <li>Use Ollama (free, no tokens) - click "Generate with Ollama (Free)" button above</li>
+                        <li>Use Groq (free, no tokens) - click "Generate with Groq (Free)" button above</li>
                         <li>Add credits to your OpenAI account at <a href="https://platform.openai.com/account/billing" target="_blank" rel="noopener" style={{ color: '#0EA5E9', textDecoration: 'underline' }}>platform.openai.com/account/billing</a></li>
                         <li>Wait for your quota to reset (usually monthly)</li>
                       </ul>
