@@ -57,20 +57,13 @@ Add these **7 environment variables** to your Render service:
 
 ### 7. CORS_ORIGINS
 **Key:** `CORS_ORIGINS`  
-**Value:** `https://your-vercel-app.vercel.app`
+**Value:** `https://smart-planner-ai-cyan.vercel.app,http://localhost:3000`
 
-**⚠️ IMPORTANT:** Replace `your-vercel-app` with your actual Vercel app name!
+**Your Vercel URL:** `https://smart-planner-ai-cyan.vercel.app`
 
-**How to find your Vercel URL:**
-1. Go to [vercel.com](https://vercel.com)
-2. Click on your project
-3. Look at the top - it shows your domain
-4. Or go to Settings → Domains
-5. Copy the URL (e.g., `https://smartplanner-ai.vercel.app`)
-
-**If you have multiple domains, separate with commas:**
+**If you only want production (no localhost):**
 ```
-https://smartplanner-ai.vercel.app,https://smartplanner-ai-git-main.vercel.app
+https://smart-planner-ai-cyan.vercel.app
 ```
 
 ---
@@ -111,7 +104,7 @@ Environment Variables:
 │ LLM_PROVIDER        │ ollama                                      │
 │ OLLAMA_BASE_URL     │ http://host.docker.internal:11434          │
 │ OLLAMA_MODEL        │ qwen2.5:7b-instruct                         │
-│ CORS_ORIGINS        │ https://smartplanner-ai.vercel.app         │
+│ CORS_ORIGINS        │ https://smart-planner-ai-cyan.vercel.app  │
 └─────────────────────┴─────────────────────────────────────────────┘
 ```
 
