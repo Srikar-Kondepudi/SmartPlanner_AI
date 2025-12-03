@@ -22,7 +22,14 @@ import logging
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+"""
+Note on routing:
+- We support BOTH \"/projects\" and \"/projects/\" to avoid 405 Method Not
+  Allowed issues caused by subtle trailing-slash differences on some hosts.
+"""
+
+@router.post(\"\", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+@router.post(\"/\", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     project_data: ProjectCreate,
     current_user: User = Depends(get_current_active_user),
@@ -39,7 +46,8 @@ async def create_project(
     db.refresh(project)
     return project
 
-@router.get("/", response_model=List[ProjectResponse])
+@router.get(\"\", response_model=List[ProjectResponse])
+@router.get(\"/\", response_model=List[ProjectResponse])
 async def list_projects(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
