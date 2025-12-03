@@ -46,8 +46,7 @@ async def create_project(
     db.refresh(project)
     return project
 
-@router.get(\"\", response_model=List[ProjectResponse])
-@router.get(\"/\", response_model=List[ProjectResponse])
+@router.get("", response_model=List[ProjectResponse])
 async def list_projects(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
