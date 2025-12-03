@@ -8,6 +8,7 @@ from app.services.llm_service import LLMService
 from app.services.pinecone_service import PineconeService
 import logging
 import json
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +65,8 @@ class SprintService:
             for epic in created_epics:
                 epic_description = f"{epic.title}: {epic.description}"
                 stories_data = await self.llm_service.generate_stories(epic_description, llm_provider)
+                # Small delay to avoid hitting rate limits (Groq free tier: 6000 tokens/minute)
+                await asyncio.sleep(0.5)
                 
                 for story_data in stories_data:
                     story = Story(
@@ -90,6 +93,8 @@ class SprintService:
                     story.acceptance_criteria or "",
                     llm_provider
                 )
+                # Small delay to avoid hitting rate limits (Groq free tier: 6000 tokens/minute)
+                await asyncio.sleep(0.3)
                 
                 for task_data in tasks_data:
                     task = Task(

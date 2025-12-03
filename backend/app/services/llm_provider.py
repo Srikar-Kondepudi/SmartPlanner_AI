@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 import httpx
 import json
 import logging
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +245,7 @@ class GroqProvider(LLMProvider):
         messages: List[Dict[str, str]],
         options: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
-        """Generate text using Groq API (OpenAI-compatible)"""
+        """Generate text using Groq API (OpenAI-compatible) with retry logic for rate limits"""
         options = options or {}
         
         # Convert messages to OpenAI format (Groq uses OpenAI-compatible API)
@@ -263,16 +264,38 @@ class GroqProvider(LLMProvider):
             "temperature": options.get('temperature', 0.7)
         }
         
-        try:
-            logger.info(f"Calling Groq API with model {payload['model']}")
-            response = await self.client.post("/chat/completions", json=payload)
-            
-            # Log response for debugging
-            if response.status_code != 200:
-                error_body = response.text
-                logger.error(f"Groq API error {response.status_code}: {error_body}")
-            
-            response.raise_for_status()
+        # Retry logic for rate limits (429 errors)
+        max_retries = 3
+        retry_delay = 2  # Start with 2 seconds
+        
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Calling Groq API with model {payload['model']} (attempt {attempt + 1}/{max_retries})")
+                response = await self.client.post("/chat/completions", json=payload)
+                
+                # Log response for debugging
+                if response.status_code != 200:
+                    error_body = response.text
+                    logger.warning(f"Groq API error {response.status_code}: {error_body}")
+                
+                # If rate limited, retry with exponential backoff
+                if response.status_code == 429:
+                    retry_after = response.headers.get('retry-after', str(retry_delay))
+                    try:
+                        retry_seconds = int(retry_after)
+                    except:
+                        retry_seconds = retry_delay
+                    
+                    if attempt < max_retries - 1:
+                        logger.info(f"Rate limit hit. Waiting {retry_seconds} seconds before retry...")
+                        await asyncio.sleep(retry_seconds)
+                        retry_delay *= 2  # Exponential backoff
+                        continue
+                    else:
+                        # Last attempt failed, raise error
+                        response.raise_for_status()
+                
+                response.raise_for_status()
             
             data = response.json()
             
@@ -314,11 +337,20 @@ class GroqProvider(LLMProvider):
                 raise ValueError(error_msg)
             
             elif e.response.status_code == 429:
+                # Extract retry-after header if available
+                retry_after = e.response.headers.get('retry-after', '60')
+                try:
+                    retry_seconds = int(retry_after)
+                except:
+                    retry_seconds = 60
+                
                 error_msg = (
-                    "Groq API rate limit exceeded. Free tier has generous limits. "
-                    "Please wait a moment and try again."
+                    f"Groq API rate limit exceeded (6000 tokens/minute on free tier). "
+                    f"Rate limit resets in {retry_seconds} seconds. "
+                    f"Please wait and try again, or upgrade to Dev Tier for higher limits: "
+                    f"https://console.groq.com/settings/billing"
                 )
-                logger.error(error_msg)
+                logger.warning(f"Groq rate limit hit. Retry after {retry_seconds}s")
                 raise ValueError(error_msg)
             
             raise ValueError(f"Groq API error {e.response.status_code}: {error_body}")
