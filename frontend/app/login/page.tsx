@@ -27,7 +27,18 @@ export default function LoginPage() {
       localStorage.setItem('token', response.data.access_token)
       router.push('/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed')
+      console.error('Login error:', err)
+      
+      // More detailed error handling
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+        setError('Cannot connect to server. Please check if the backend is running and NEXT_PUBLIC_API_URL is configured correctly.')
+      } else if (err.response?.status === 401) {
+        setError('Incorrect email or password. Please try again.')
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail)
+      } else {
+        setError(err.message || 'Login failed. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -82,6 +93,20 @@ export default function LoginPage() {
           }}>
             Sign in to your SmartPlanner AI account
           </CardDescription>
+          {typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_URL === 'http://localhost:8000' && (
+            <div style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              background: '#FEF3C7',
+              border: '1px solid #FCD34D',
+              borderRadius: '8px',
+              fontSize: '0.8125rem',
+              color: '#92400E',
+              margin: '1rem 2rem 0'
+            }}>
+              ⚠️ Backend URL is set to localhost. For production, deploy backend and update NEXT_PUBLIC_API_URL in Vercel.
+            </div>
+          )}
         </CardHeader>
 
         <CardContent style={{ padding: '0 2rem 2.5rem' }}>
