@@ -97,7 +97,7 @@ export default function ProjectDetailPage() {
     }
   }
 
-  const handleGenerateSprintPlan = async (provider: string = 'ollama') => {
+  const handleGenerateSprintPlan = async (provider: string = 'groq') => {
     setGenerating(true)
     setError('')
     setSuccess('')
@@ -302,8 +302,8 @@ export default function ProjectDetailPage() {
                     marginBottom: '0.5rem', 
                     fontSize: '0.95rem' 
                   }}>
-                    {error.includes('Ollama') || error.includes('ollama') || error.includes('503')
-                      ? '🔧 Ollama Not Running'
+                    {error.includes('Ollama') || error.includes('ollama') || error.includes('Groq') || error.includes('groq') || error.includes('503')
+                      ? '🔧 LLM Provider Error'
                       : error.includes('quota') || error.includes('Quota') || error.includes('402')
                       ? '⚠️ API Quota Exceeded'
                       : 'Error'}
@@ -546,7 +546,7 @@ export default function ProjectDetailPage() {
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                     <Button
-                      onClick={() => handleGenerateSprintPlan('ollama')}
+                      onClick={() => handleGenerateSprintPlan('groq')}
                       disabled={generating || !hasSpec}
                       style={{
                         width: '100%',
@@ -565,7 +565,7 @@ export default function ProjectDetailPage() {
                       }}
                     >
                       <Sparkles style={{ width: '1rem', height: '1rem', flexShrink: 0 }} />
-                      <span>{generating ? 'Generating with AI...' : 'Generate with Ollama (Free)'}</span>
+                      <span>{generating ? 'Generating with AI...' : 'Generate with Groq (Free)'}</span>
                     </Button>
                     <Button
                       onClick={() => handleGenerateSprintPlan('openai')}
