@@ -14,10 +14,17 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = ""  # Will be auto-provided by Railway when PostgreSQL is linked
     
-    # JWT
-    JWT_SECRET: str
+    # JWT - support both JWT_SECRET and JWT_SECRET_KEY for compatibility
+    JWT_SECRET: str = ""
+    JWT_SECRET_KEY: str = ""  # Alternative name
+    
+    @property
+    def jwt_secret_key(self) -> str:
+        """Get JWT secret, supporting both variable names"""
+        return self.JWT_SECRET or self.JWT_SECRET_KEY
+    
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION_HOURS: int = 24
     
@@ -63,5 +70,28 @@ class Settings(BaseSettings):
         case_sensitive = True
         extra = "allow"  # Allow extra environment variables for flexibility
 
+# Validate required settings at startup
+def validate_settings():
+    """Validate that required settings are present"""
+    errors = []
+    
+    if not settings.DATABASE_URL:
+        errors.append("DATABASE_URL is required. Make sure PostgreSQL service is linked in Railway.")
+    
+    if not settings.jwt_secret_key:
+        errors.append("JWT_SECRET or JWT_SECRET_KEY is required. Set one of these in Railway environment variables.")
+    
+    if errors:
+        error_msg = "Missing required environment variables:\n" + "\n".join(f"  - {e}" for e in errors)
+        raise ValueError(error_msg)
+
 settings = Settings()
+
+# Validate on import (but allow for testing)
+try:
+    validate_settings()
+except ValueError as e:
+    import sys
+    if "pytest" not in sys.modules:  # Don't fail during tests
+        raise
 
