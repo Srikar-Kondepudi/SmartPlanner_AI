@@ -266,6 +266,12 @@ class GroqProvider(LLMProvider):
         try:
             logger.info(f"Calling Groq API with model {payload['model']}")
             response = await self.client.post("/chat/completions", json=payload)
+            
+            # Log response for debugging
+            if response.status_code != 200:
+                error_body = response.text
+                logger.error(f"Groq API error {response.status_code}: {error_body}")
+            
             response.raise_for_status()
             
             data = response.json()
@@ -284,7 +290,22 @@ class GroqProvider(LLMProvider):
             }
         
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
+            error_body = ""
+            try:
+                error_body = e.response.json()
+            except:
+                error_body = e.response.text
+            
+            if e.response.status_code == 400:
+                error_msg = (
+                    f"Groq API bad request: {error_body}. "
+                    f"Check that the model '{payload['model']}' is valid. "
+                    f"Valid models: llama-3.1-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768"
+                )
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+            
+            elif e.response.status_code == 401:
                 error_msg = (
                     "Groq API key is invalid. Please check your GROQ_API_KEY. "
                     "Get a free API key at https://console.groq.com/keys"
@@ -300,7 +321,7 @@ class GroqProvider(LLMProvider):
                 logger.error(error_msg)
                 raise ValueError(error_msg)
             
-            raise
+            raise ValueError(f"Groq API error {e.response.status_code}: {error_body}")
         
         except Exception as e:
             logger.error(f"Groq API error: {e}")
