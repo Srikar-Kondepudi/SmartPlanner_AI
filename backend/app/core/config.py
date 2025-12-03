@@ -70,22 +70,23 @@ class Settings(BaseSettings):
         case_sensitive = True
         extra = "allow"  # Allow extra environment variables for flexibility
 
-# Validate required settings at startup
+settings = Settings()
+
+# Validate required settings at startup (but allow graceful failure for Railway to show better errors)
 def validate_settings():
     """Validate that required settings are present"""
     errors = []
     
     if not settings.DATABASE_URL:
-        errors.append("DATABASE_URL is required. Make sure PostgreSQL service is linked in Railway.")
+        errors.append("DATABASE_URL is required. Make sure PostgreSQL service is linked in Railway. Go to: Backend Service → Settings → Variables → Add Reference → Select PostgreSQL → Select DATABASE_URL")
     
     if not settings.jwt_secret_key:
         errors.append("JWT_SECRET or JWT_SECRET_KEY is required. Set one of these in Railway environment variables.")
     
     if errors:
-        error_msg = "Missing required environment variables:\n" + "\n".join(f"  - {e}" for e in errors)
+        error_msg = "❌ Missing required environment variables:\n\n" + "\n".join(f"  • {e}" for e in errors)
+        error_msg += "\n\n📖 See LINK_DATABASE_RAILWAY.md for detailed instructions."
         raise ValueError(error_msg)
-
-settings = Settings()
 
 # Validate on import (but allow for testing)
 try:
@@ -93,5 +94,8 @@ try:
 except ValueError as e:
     import sys
     if "pytest" not in sys.modules:  # Don't fail during tests
+        print("\n" + "="*60)
+        print(str(e))
+        print("="*60 + "\n")
         raise
 
