@@ -52,6 +52,17 @@ class LLMService:
                 openai_api_key=settings.OPENAI_API_KEY,
                 openai_model=settings.DEFAULT_MODEL
             )
+        elif provider_name == "groq":
+            if not settings.GROQ_API_KEY:
+                raise ValueError(
+                    "GROQ_API_KEY is required for Groq provider. "
+                    "Get a free API key at https://console.groq.com/keys"
+                )
+            return get_provider(
+                "groq",
+                groq_api_key=settings.GROQ_API_KEY,
+                groq_model=settings.GROQ_MODEL
+            )
         elif provider_name == "anthropic":
             # Keep Anthropic support for backward compatibility
             # But recommend using Ollama or OpenAI
