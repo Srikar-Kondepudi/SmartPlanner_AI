@@ -10,15 +10,21 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1.router import api_router
 from app.core.logging import setup_logging
+import logging
 
 # Setup logging
 setup_logging()
+logger = logging.getLogger(__name__)
 
-# Create database tables on startup
+# Create database tables on startup (lazy - don't fail if DB is temporarily unavailable)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
-    Base.metadata.create_all(bind=engine)
+    # Startup - try to create tables, but don't fail if DB is unavailable
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created/verified successfully")
+    except Exception as e:
+        logger.warning(f"Could not connect to database on startup: {e}. App will continue, but database features may not work.")
     yield
     # Shutdown
     pass
