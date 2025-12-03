@@ -66,7 +66,7 @@ class LLMService:
         else:
             raise ValueError(
                 f"Unknown provider: {provider_name}. "
-                f"Supported providers: 'ollama', 'openai'"
+                f"Supported providers: 'ollama', 'openai', 'groq'"
             )
     
     async def _call_provider(

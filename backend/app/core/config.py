@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     DEFAULT_MODEL: str = "gpt-4o"
     
+    # Optional: Groq (FREE tier, recommended for Render deployment)
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = "llama-3.1-70b-versatile"  # Free, fast, and powerful!
+    
     # Deprecated: Anthropic support removed
     ANTHROPIC_API_KEY: str = ""
     CLAUDE_MODEL: str = "claude-3-5-sonnet-20241022"

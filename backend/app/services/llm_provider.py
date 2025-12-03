@@ -222,12 +222,103 @@ class OpenAIProvider(LLMProvider):
         await self.client.aclose()
 
 
+class GroqProvider(LLMProvider):
+    """Groq provider (FREE tier, no credit card required!)"""
+    
+    def __init__(self, api_key: str, model: str = "llama-3.1-70b-versatile"):
+        if not api_key:
+            raise ValueError("GROQ_API_KEY is required for Groq provider")
+        self.api_key = api_key
+        self.model = model
+        self.client = httpx.AsyncClient(
+            base_url="https://api.groq.com/openai/v1",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            },
+            timeout=120.0
+        )
+    
+    async def generate_text(
+        self,
+        messages: List[Dict[str, str]],
+        options: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """Generate text using Groq API (OpenAI-compatible)"""
+        options = options or {}
+        
+        # Convert messages to OpenAI format (Groq uses OpenAI-compatible API)
+        groq_messages = []
+        for msg in messages:
+            role = msg.get('role', 'user')
+            content = msg.get('content', '')
+            groq_messages.append({
+                'role': role,
+                'content': content
+            })
+        
+        payload = {
+            "model": options.get('model', self.model),
+            "messages": groq_messages,
+            "temperature": options.get('temperature', 0.7)
+        }
+        
+        try:
+            logger.info(f"Calling Groq API with model {payload['model']}")
+            response = await self.client.post("/chat/completions", json=payload)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Extract text and usage
+            text = data['choices'][0]['message']['content']
+            usage = data.get('usage', {})
+            
+            return {
+                'text': text,
+                'usage': {
+                    'prompt_tokens': usage.get('prompt_tokens', 0),
+                    'completion_tokens': usage.get('completion_tokens', 0),
+                    'total_tokens': usage.get('total_tokens', 0)
+                }
+            }
+        
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 401:
+                error_msg = (
+                    "Groq API key is invalid. Please check your GROQ_API_KEY. "
+                    "Get a free API key at https://console.groq.com/keys"
+                )
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+            
+            elif e.response.status_code == 429:
+                error_msg = (
+                    "Groq API rate limit exceeded. Free tier has generous limits. "
+                    "Please wait a moment and try again."
+                )
+                logger.error(error_msg)
+                raise ValueError(error_msg)
+            
+            raise
+        
+        except Exception as e:
+            logger.error(f"Groq API error: {e}")
+            raise
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.client.aclose()
+
+
 def get_provider(provider_name: str, **kwargs) -> LLMProvider:
     """
     Factory function to get the appropriate LLM provider
     
     Args:
-        provider_name: 'ollama' or 'openai'
+        provider_name: 'ollama', 'openai', or 'groq'
         **kwargs: Provider-specific configuration
     
     Returns:
@@ -251,9 +342,21 @@ def get_provider(provider_name: str, **kwargs) -> LLMProvider:
             model=kwargs.get('openai_model', 'gpt-4o')
         )
     
+    elif provider_name == "groq":
+        api_key = kwargs.get('groq_api_key')
+        if not api_key:
+            raise ValueError(
+                "GROQ_API_KEY is required for Groq provider. "
+                "Get a free API key at https://console.groq.com/keys"
+            )
+        return GroqProvider(
+            api_key=api_key,
+            model=kwargs.get('groq_model', 'llama-3.1-70b-versatile')
+        )
+    
     else:
         raise ValueError(
             f"Unknown provider: {provider_name}. "
-            f"Supported providers: 'ollama', 'openai'"
+            f"Supported providers: 'ollama', 'openai', 'groq'"
         )
 
