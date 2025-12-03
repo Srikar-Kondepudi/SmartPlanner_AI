@@ -1,0 +1,72 @@
+{
+  "project_id": 1,
+  "epics": 6,
+  "stories": 24,
+  "tasks": 72,
+  "total_effort": 89,
+  "predicted_velocity": 20.5,
+  "estimated_sprints": 5,
+  "timeline": {
+    "estimated_sprints": 5,
+    "sprint_duration_weeks": 2,
+    "estimated_start_date": "2024-01-01",
+    "estimated_end_date": "2024-03-11",
+    "confidence_level": "high",
+    "risk_factors": [
+      "Payment gateway integration complexity",
+      "Third-party service dependencies"
+    ]
+  },
+  "velocity_prediction": {
+    "predicted_velocity": 20.5,
+    "confidence": "medium",
+    "based_on_sprints": 3,
+    "similar_sprints": [
+      {
+        "sprint_id": 5,
+        "velocity": 22,
+        "similarity": 0.87,
+        "metadata": {
+          "sprint_name": "Sprint 5",
+          "project_id": 1
+        }
+      }
+    ]
+  },
+  "epics_detail": [
+    {
+      "id": 1,
+      "title": "User Management System",
+      "description": "Complete user registration, authentication, and profile management",
+      "priority": "high",
+      "estimated_effort": 13,
+      "stories": [
+        {
+          "id": 1,
+          "title": "User Registration",
+          "description": "As a new user, I want to register an account so that I can access the platform",
+          "acceptance_criteria": "1. Registration form with validation\n2. Email verification\n3. Password strength requirements",
+          "priority": "high",
+          "estimated_effort": 5,
+          "tasks": [
+            {
+              "id": 1,
+              "title": "Design registration form UI",
+              "description": "Create responsive registration form with validation",
+              "estimated_hours": 4,
+              "priority": "high"
+            },
+            {
+              "id": 2,
+              "title": "Implement backend registration endpoint",
+              "description": "Create API endpoint for user registration",
+              "estimated_hours": 6,
+              "priority": "high"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: smartplanner-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-smartplanner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartplanner}
+      POSTGRES_DB: ${POSTGRES_DB:-smartplanner_db}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartplanner"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smartplanner-backend
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-smartplanner}:${POSTGRES_PASSWORD:-smartplanner}@postgres:5432/${POSTGRES_DB:-smartplanner_db}
+      - JWT_SECRET=${JWT_SECRET}
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:7b-instruct}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - DEFAULT_MODEL=${DEFAULT_MODEL:-gpt-4o}
+      - PINECONE_API_KEY=${PINECONE_API_KEY:-}
+      - PINECONE_ENVIRONMENT=${PINECONE_ENVIRONMENT:-us-east-1-aws}
+      - PINECONE_INDEX_NAME=${PINECONE_INDEX_NAME:-smartplanner-sprints}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smartplanner-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
+volumes:
+  postgres_data:
+
